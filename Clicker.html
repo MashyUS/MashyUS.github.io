@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>🐱 Cat Clicker 🐾</title>
+<style>
+  body {
+    font-family: 'Comic Sans MS', cursive, sans-serif;
+    background-color: #fff3e6;
+    color: #333;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+    z-index: 0;
+  }
+
+  .container {
+    display: flex;
+    max-width: 950px;
+    margin-top: 20px;
+    gap: 20px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .clicker-box,
+  .shop-box {
+    background: #fff8f0;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .clicker-box,
+  .shop-box {
+    height: 580px;
+  }
+
+  .clicker-box {
+    flex: 0 0 280px;
+    text-align: center;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+    z-index: 2;
+  }
+
+  #clickBtn {
+    font-size: 100px;
+    border-radius: 50%;
+    width: 130px;
+    height: 130px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+    transition: transform 0.1s;
+    z-index: 5;
+    background: #ffe0b2;
+    border: 4px solid #ffcc66;
+  }
+
+  #clickBtn.clicked {
+    transform: scale(1.2);
+  }
+
+  .shop-box {
+    flex: 1;
+    max-height: 580px;
+    overflow-y: auto;
+    padding-right: 5px;
+    z-index: 2;
+  }
+
+  .shop-section {
+    margin-bottom: 15px;
+  }
+
+  button.shop-btn {
+    padding: 8px 12px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    border-radius: 12px;
+    border: none;
+    background-color: #ffcc66;
+    color: white;
+    font-weight: bold;
+    transition: transform 0.1s, background 0.2s;
+    margin-bottom: 6px;
+  }
+
+  button.shop-btn:hover {
+    transform: scale(1.03);
+  }
+
+  button.shop-btn:disabled {
+    background-color: #ccc;
+    cursor: default;
+  }
+
+  .stats {
+    font-size: 1rem;
+    margin-bottom: 3px;
+  }
+
+  .floating-cat, .click-number, .paw-print, .auto-cat, .laser-pointer, #laserTimer {
+    position: absolute;
+    pointer-events: none;
+    user-select: none;
+    z-index: 0;
+  }
+
+  .auto-cat {
+    font-size: 28px;
+    transition: all 1.5s linear;
+    opacity: 0.3;
+  }
+
+  .laser-pointer {
+    font-size: 28px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 1s;
+    z-index: 100;
+  }
+
+  .laser-pointer:hover {
+    transform: scale(1.2);
+  }
+
+  #laserTimer {
+    font-weight: bold;
+    color: #ff4444;
+    font-size: 20px;
+    top: 5px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 101;
+  }
+
+  #discordBtn, #statsBtn {
+    position: fixed;
+    bottom: 15px;
+    padding: 10px 16px;
+    border-radius: 12px;
+    font-weight: bold;
+    text-decoration: none;
+    cursor: pointer;
+    transition: transform 0.1s;
+    color: white;
+    z-index: 1000;
+  }
+
+  #discordBtn {
+    right: 15px;
+    background-color: #7289da;
+  }
+
+  #statsBtn {
+    left: 15px;
+    background-color: #ffcc66;
+  }
+
+  #discordBtn:hover, #statsBtn:hover {
+    transform: scale(1.05);
+  }
+
+  #statsModal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.6);
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+  }
+
+  #statsContent {
+    background: #fff8f0;
+    padding: 20px;
+    border-radius: 15px;
+    max-width: 400px;
+    max-height: 80%;
+    overflow-y: auto;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+  }
+
+  #statsContent h2 {
+    margin-top: 0;
+  }
+
+  #closeStats {
+    float: right;
+    cursor: pointer;
+    font-size: 1.2rem;
+    font-weight: bold;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+  }
+
+  td, th {
+    border-bottom: 1px solid #ccc;
+    padding: 4px 6px;
+    text-align: left;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="clicker-box" id="clickerBox">
+    <h1>🐾 Cat Clicker 🐱</h1>
+    <p class="stats">Pets: <span id="score">0</span></p>
+    <p class="stats">Pets Per Click: <span id="power">1</span></p>
+    <p class="stats">Auto-Cats: <span id="autoCount">0</span></p>
+    <button id="clickBtn">🐱</button>
+  </div>
+
+  <div class="shop-box">
+    <h2>🛒 Shop</h2>
+    <div class="shop-section">
+      <h3>Unlimited Upgrades</h3>
+      <div id="shopUnlimited"></div>
+    </div>
+    <div class="shop-section">
+      <h3>One-Time Upgrades</h3>
+      <div id="shopOneTime"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Stats Modal -->
+<div id="statsModal">
+  <div id="statsContent">
+    <span id="closeStats">&times;</span>
+    <h2>📊 Total Stats</h2>
+    <p>Total Pets Collected: <span id="totalCats">0</span></p>
+    <p>Total Clicks: <span id="totalClicks">0</span></p>
+    <p>Total Auto-Cats: <span id="totalAuto">0</span></p>
+    <h3>Upgrades Purchased</h3>
+    <table id="statsTable">
+      <thead><tr><th>Upgrade</th><th>Purchased</th></tr></thead>
+      <tbody></tbody>
+    </table>
+    <h3>🏆 Achievements</h3>
+    <div id="achievements"></div>
+  </div>
+</div>
+
+<a id="discordBtn" href="https://discord.gg/PF8aueAKH5" target="_blank">Join Discord</a>
+<button id="statsBtn">📊 View Stats</button>
+
+<script>
+  // ===== Game Variables =====
+  let score = 0, power = 1, autoClickers = 0, totalClicks = 0;
+  let clickMultiplier = 1, autoMultiplier = 1;
+  let laserActive = false, laserTimer = 0, laserInterval;
+
+  const clickerBox = document.getElementById("clickerBox");
+  const scoreDisplay = document.getElementById("score");
+  const powerDisplay = document.getElementById("power");
+  const autoCountDisplay = document.getElementById("autoCount");
+  const clickBtn = document.getElementById("clickBtn");
+  const shopUnlimited = document.getElementById("shopUnlimited");
+  const shopOneTime = document.getElementById("shopOneTime");
+  const achievementsDiv = document.getElementById("achievements");
+
+  // ===== Cats Progression =====
+  const catStages = ["🐱","😺","😸","😻"];
+  function getCurrentCat() {
+    if(score >= 1000000) return catStages[3];
+    if(score >= 10000) return catStages[2];
+    if(score >= 100) return catStages[1];
+    return catStages[0];
+  }
+
+  // ===== Upgrades =====
+  const upgrades = [
+    {name:"+1 Pet 🐾", cost:10, action:()=>power++, type:"click", oneTime:false, purchased:0},
+    {name:"+2 Pets 🐾", cost:50, action:()=>power+=2, type:"click", oneTime:false, purchased:0},
+    {name:"+5 Pets 🐾", cost:200, action:()=>power+=5, type:"click", oneTime:false, purchased:0},
+    {name:"+10 Pets 🐾", cost:800, action:()=>power+=10, type:"click", oneTime:false, purchased:0},
+    {name:"+50 Pets 🐾", cost:3000, action:()=>power+=50, type:"click", oneTime:false, purchased:0},
+    {name:"+100 Pets 🐾", cost:10000, action:()=>power+=100, type:"click", oneTime:false, purchased:0},
+    {name:"+1 Auto-Cat 🐱", cost:25, action:()=>autoClickers++, type:"auto", oneTime:false, purchased:0},
+    {name:"+3 Auto-Cats 🐱", cost:150, action:()=>autoClickers+=3, type:"auto", oneTime:false, purchased:0},
+    {name:"+5 Auto-Cats 🐱", cost:500, action:()=>autoClickers+=5, type:"auto", oneTime:false, purchased:0},
+    {name:"+10 Auto-Cats 🐱", cost:1500, action:()=>autoClickers+=10, type:"auto", oneTime:false, purchased:0},
+    {name:"+50 Auto-Cats 🐱", cost:5000, action:()=>autoClickers+=50, type:"auto", oneTime:false, purchased:0},
+    {name:"+200 Auto-Cats 🐱", cost:15000, action:()=>autoClickers+=200, type:"auto", oneTime:false, purchased:0},
+    {name:"+10% Pets ⚡", cost:300, action:()=>clickMultiplier+=0.1, type:"click", oneTime:true, purchased:0},
+    {name:"+25% Pets ⚡", cost:1000, action:()=>clickMultiplier+=0.25, type:"click", oneTime:true, purchased:0},
+    {name:"+50% Pets ⚡", cost:3000, action:()=>clickMultiplier+=0.5, type:"click", oneTime:true, purchased:0},
+    {name:"+10% Auto-Cats 🐾", cost:500, action:()=>autoMultiplier+=0.1, type:"auto", oneTime:true, purchased:0},
+    {name:"+25% Auto-Cats 🐾", cost:2000, action:()=>autoMultiplier+=0.25, type:"auto", oneTime:true, purchased:0},
+    {name:"+50% Auto-Cats 🐾", cost:5000, action:()=>autoMultiplier+=0.5, type:"auto", oneTime:true, purchased:0},
+    {name:"Mega Catnip Factory 🌿", cost:500000, action:()=>autoClickers+=500, type:"auto", oneTime:false, purchased:0},
+    {name:"Diamond Cat Collar 💎", cost:1000000, action:()=>clickMultiplier+=2, type:"click", oneTime:true, purchased:0},
+    {name:"Royal Cat Throne 👑", cost:2500000, action:()=>power+=500, type:"click", oneTime:true, purchased:0},
+    {name:"Infinite Kitten Army 🐾", cost:5000000, action:()=>autoClickers+=1000, type:"auto", oneTime:false, purchased:0},
+    {name:"Cosmic Catnip 🌌", cost:10000000, action:()=>autoMultiplier+=5, type:"auto", oneTime:true, purchased:0},
+    {name:"Legendary Cat Medal 🏅", cost:25000000, action:()=>clickMultiplier+=10, type:"click", oneTime:true, purchased:0}
+  ];
+
+  // ===== Achievements =====
+  const achievements = [
+    {name:"First Pet 🐾", condition:()=>totalClicks>=1, earned:false},
+    {name:"10 Pets 🐱", condition:()=>score>=10, earned:false},
+    {name:"100 Pets 😺", condition:()=>score>=100, earned:false},
+    {name:"500 Pets 🐾", condition:()=>score>=500, earned:false},
+    {name:"1,000 Pets 😻", condition:()=>score>=1000, earned:false},
+    {name:"10 Auto-Cats 😸", condition:()=>autoClickers>=10, earned:false},
+    {name:"50 Auto-Cats 🐾", condition:()=>autoClickers>=50, earned:false},
+    {name:"100 Auto-Cats 🐱", condition:()=>autoClickers>=100, earned:false},
+    {name:"Powerful Pet 🏅", condition:()=>power>=50, earned:false},
+    {name:"Pet Master ⚡", condition:()=>clickMultiplier>=2, earned:false},
+    {name:"100,000 Pets 🌟", condition:()=>score>=100000, earned:false},
+    {name:"1,000,000 Pets 🌌", condition:()=>score>=1000000, earned:false},
+    {name:"500 Auto-Cats 🐱", condition:()=>autoClickers>=500, earned:false},
+    {name:"1,000 Auto-Cats 🐾", condition:()=>autoClickers>=1000, earned:false},
+    {name:"Laser Hero 🔴", condition:()=>laserActive===true, earned:false}
+  ];
+
+  // ===== Floating Paw Prints (Cookie Clicker style) =====
+  function showPawPrints(count=1){
+    const rect = clickBtn.getBoundingClientRect();
+    for(let i=0; i<Math.min(count,5); i++){
+      const paw = document.createElement("div");
+      paw.className = "paw-print";
+      paw.textContent = "🐾";
+      paw.style.position = "fixed";
+      paw.style.zIndex = "999";
+      const angle = Math.random()*2*Math.PI;
+      const radius = Math.random()*30;
+      paw.style.left = (rect.left + rect.width/2 + radius*Math.cos(angle)) + "px";
+      paw.style.top = (rect.top + rect.height/2 + radius*Math.sin(angle)) + "px";
+      document.body.appendChild(paw);
+      paw.animate([
+        { transform: 'translateY(0) scale(1)', opacity: 1 },
+        { transform: 'translateY(-80px) scale(1.5)', opacity: 0 }
+      ], { duration: 1000, easing: 'ease-out' });
+      setTimeout(()=>paw.remove(), 1000);
+    }
+  }
+
+  // ===== Click Action =====
+  clickBtn.onclick = () => {
+    clickBtn.classList.add("clicked");
+    setTimeout(()=>clickBtn.classList.remove("clicked"),100);
+    const gained = Math.floor(power*clickMultiplier);
+    score += gained;
+    totalClicks++;
+    clickBtn.textContent = getCurrentCat();
+    showPawPrints(gained); // <-- call paw prints here
+    updateUI();
+  };
+
+  // ===== Auto-Cats in Background =====
+  let autoCatPositions = [];
+  function spawnAutoCats(){
+    while(document.querySelectorAll('.auto-cat').length < autoClickers){
+      const autoCat = document.createElement('div');
+      autoCat.className = 'auto-cat';
+      autoCat.textContent = '🐱';
+      autoCat.style.zIndex = 0;
+      const pos = {x: Math.random()*window.innerWidth, y: Math.random()*window.innerHeight, dx: (Math.random()-0.5)*2, dy: (Math.random()-0.5)*2};
+      autoCatPositions.push(pos);
+      autoCat.style.left = pos.x+'px';
+      autoCat.style.top = pos.y+'px';
+      document.body.appendChild(autoCat);
+    }
+    document.querySelectorAll('.auto-cat').forEach((cat,i)=>{
+      let pos = autoCatPositions[i];
+      pos.x += pos.dx; pos.y += pos.dy;
+      if(pos.x < 0 || pos.x > window.innerWidth) pos.dx*=-1;
+      if(pos.y < 0 || pos.y > window.innerHeight) pos.dy*=-1;
+      cat.style.left = pos.x+'px';
+      cat.style.top = pos.y+'px';
+    });
+  }
+  setInterval(spawnAutoCats,50);
+
+  // ===== Auto-Pets =====
+  setInterval(()=>{
+    score += Math.floor(autoClickers*autoMultiplier);
+    updateUI();
+  },1000);
+
+  // ===== Shop Buttons =====
+  function createShopButtons(){
+    shopUnlimited.innerHTML=""; shopOneTime.innerHTML="";
+    upgrades.forEach(up=>{
+      const btn = document.createElement("button");
+      btn.className = "shop-btn";
+      btn.innerText = `${up.name} (Cost: ${up.cost})`;
+      if(up.oneTime && up.purchased) btn.disabled = true;
+      btn.onclick = ()=>{
+        if(score >= up.cost && !(up.oneTime && up.purchased)){
+          score -= up.cost;
+          up.action();
+          up.purchased++;
+          if(!up.oneTime) up.cost = Math.floor(up.cost*1.3);
+          updateUI();
+        } else alert("Not enough pets!");
+      };
+      if(up.oneTime) shopOneTime.appendChild(btn);
+      else shopUnlimited.appendChild(btn);
+    });
+  }
+
+  // ===== Achievements =====
+  function updateAchievements(){
+    achievementsDiv.innerHTML="";
+    achievements.forEach(a=>{
+      if(a.condition()) a.earned = true;
+      achievementsDiv.innerHTML += `${a.earned?"✅":"⬜"} ${a.name}<br>`;
+    });
+  }
+
+  // ===== Stats Modal =====
+  const statsModal = document.getElementById("statsModal");
+  const closeStats = document.getElementById("closeStats");
+  const statsBtn = document.getElementById("statsBtn");
+
+  statsBtn.onclick = ()=>{
+    updateStats(); statsModal.style.display = "flex";
+  };
+  closeStats.onclick = ()=>{ statsModal.style.display = "none"; };
+  window.onclick = (e)=>{ if(e.target==statsModal) statsModal.style.display="none"; };
+
+  function updateStats(){
+    document.getElementById("totalCats").textContent = score;
+    document.getElementById("totalClicks").textContent = totalClicks;
+    document.getElementById("totalAuto").textContent = autoClickers;
+    const tbody = document.querySelector("#statsTable tbody");
+    tbody.innerHTML = "";
+    upgrades.forEach(u=>{
+      if(u.purchased) tbody.innerHTML += `<tr><td>${u.name}</td><td>${u.purchased}</td></tr>`;
+    });
+    updateAchievements();
+  }
+
+  // ===== Laser Pointer =====
+  function spawnLaserPointer(){
+    if(laserActive) return;
+    const laser = document.createElement("div");
+    laser.className = "laser-pointer";
+    laser.textContent = "🔴";
+    laser.style.left = Math.random()*(window.innerWidth-50)+"px";
+    laser.style.top = Math.random()*(window.innerHeight-100)+"px";
+    document.body.appendChild(laser);
+    setTimeout(()=>laser.style.opacity=1,50);
+    laser.onclick = function(){
+      laserActive = true;
+      laserTimer = 60;
+      laser.style.opacity = 0;
+      setTimeout(()=>laser.remove(),500);
+      clickMultiplier *= 2; autoMultiplier *= 2;
+      const timerDiv = document.createElement("div");
+      timerDiv.id = "laserTimer";
+      document.body.appendChild(timerDiv);
+      laserInterval = setInterval(()=>{
+        if(laserTimer <= 0){
+          clearInterval(laserInterval);
+          clickMultiplier /= 2; autoMultiplier /= 2;
+          laserActive = false; timerDiv.remove(); updateUI();
+          return;
+        }
+        timerDiv.textContent = `Laser Bonus: ${laserTimer}s`;
+        laserTimer--;
+      },1000);
+    };
+    setTimeout(()=>{ if(laser.parentElement) laser.remove(); },10000);
+  }
+  setInterval(spawnLaserPointer,600000);
+
+  // ===== Update UI =====
+  function updateUI(){
+    scoreDisplay.textContent = score;
+    powerDisplay.textContent = power;
+    autoCountDisplay.textContent = autoClickers;
+    createShopButtons();
+  }
+
+  updateUI();
+</script>
+</body>
+</html>
